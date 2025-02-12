@@ -5,4 +5,5 @@ export default interface ITwilioAccount extends Document {
   sid: string;
   authToken: string;
   user: string;
+  usages: string;
 }

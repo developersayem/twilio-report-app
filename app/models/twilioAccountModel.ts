@@ -10,7 +10,7 @@ const TwilioAccountsSchema: Schema = new Schema(
       type: String,
       required: true,
       minlength: 3,
-      maxlength: 30,
+      maxlength: 100,
     },
     sid: {
       type: String,
@@ -25,6 +25,10 @@ const TwilioAccountsSchema: Schema = new Schema(
       ref: "User",
       required: true, // Ensures every task is linked to a user
     },
+    usages: {
+      type: Schema.Types.ObjectId,
+      ref: "usages",
+    },
   },
   { timestamps: true } // Automatically adds createdAt & updatedAt
 );
@@ -32,11 +36,11 @@ const TwilioAccountsSchema: Schema = new Schema(
 // User Validator Function
 const twilioAccValidator = (data: IUser) => {
   const twilioAccJoiSchema = Joi.object({
-    name: Joi.string().alphanum().min(3).max(30).required(),
+    name: Joi.string().alphanum().min(3).max(100).required(),
     sid: Joi.string().alphanum().required(),
     authToken: Joi.string().alphanum().required(),
   }).messages({
-    "string.email": "Make sure your email is correct",
+    "string.email": "Make sure your sid and auth token is correct",
   });
 
   const { error } = twilioAccJoiSchema.validate(data);

@@ -1,4 +1,3 @@
-// components/ShopSwitcher.js (Client Component)
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
@@ -9,7 +8,6 @@ import {
 } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -27,7 +25,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,17 +33,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useAuth } from "@/contexts/AuthProvider";
 
-interface Image {
-  fileImage: string;
-  fileName: string;
-}
-interface Shop {
-  shopId: number;
+interface ITwilioAccount {
+  _id: string;
   name: string;
-  address: string;
-  type: string;
-  img: Image;
+  sid: string;
+  authToken: string;
+  user: string;
+  usages: string;
 }
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -56,123 +51,129 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 export default function TwilioAccountSwitcher({
   className,
 }: PopoverTriggerProps) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [showNewTeamDialog, setShowNewTeamDialog] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<Shop>();
-  const [selectedFile, setSelectedFile] = useState<Image | null>(null);
-  const [shops, setShops] = useState<Shop[]>(); // Initialize state with server data
+  const [showNewAccountDialog, setShowNewAccountDialog] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<ITwilioAccount | null>(
+    null
+  );
+  console.log(selectedAccount);
+  const [accounts, setAccounts] = useState<ITwilioAccount[]>([]);
 
-  // SUBMIT NEW SHOP DATA TO DATABASE
-  const handleAddShop = async (
+  // SUBMIT NEW TWILIO ACCOUNT DATA TO DATABASE
+  const handleAddAccount = async (
     e: FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
-    const form = e.currentTarget;
+    const formData = new FormData(e.currentTarget);
+
     try {
-      const response = await fetch("/api/v1/shops", {
+      const accountData = {
+        user,
+        name: formData.get("name") as string,
+        sid: formData.get("sid") as string,
+        authToken: formData.get("authToken") as string,
+      };
+
+      const response = await fetch("/api/v1/twilio-accounts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: (form.elements.namedItem("name") as HTMLInputElement).value,
-          address: (form.elements.namedItem("address") as HTMLInputElement)
-            .value,
-          type: (form.elements.namedItem("type") as HTMLInputElement).value,
-          img: selectedFile,
-        }),
+        body: JSON.stringify(accountData),
       });
 
-      if (response.ok) {
-        await response.json(); // Assuming the API returns the newly added shop
-
-        // Update the shops state
-        fetchData();
-        setShowNewTeamDialog(false);
-        setOpen(false);
-        setSelectedFile(null); // Reset selected file
-        e.currentTarget.reset(); // Reset form fields
-      } else {
-      }
-    } catch (error) {
-      console.error("An error occurred while adding shop:", error);
-    }
-  };
-  // how to get shops data
-  const fetchData = async () => {
-    try {
-      const response = await fetch("/api/v1/shops");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      setShops(data);
+
+      const newAccount = await response.json();
+      setAccounts((prev) => [...prev, newAccount]);
+      setShowNewAccountDialog(false);
+      setOpen(false);
+      e.currentTarget.reset();
     } catch (error) {
-      console.error("An error occurred while fetching shops:", error);
+      console.error("An error occurred while adding Twilio account:", error);
+      // Here you might want to show an error message to the user
     }
   };
+
+  // Fetch Twilio accounts data
   useEffect(() => {
-    fetchData();
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch(
+          `/api/v1/twilio-accounts/by-userId/${user?._id}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setAccounts(data);
+      } catch (error) {
+        console.error(
+          "An error occurred while fetching Twilio accounts:",
+          error
+        );
+      }
+    };
+    fetchAccounts();
   }, []);
 
+  const handleAccountSelect = (account: ITwilioAccount) => {
+    setSelectedAccount(account);
+    setOpen(false);
+  };
+
   return (
-    <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
+    <Dialog open={showNewAccountDialog} onOpenChange={setShowNewAccountDialog}>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild className="min-w-[150px]">
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-label="Select a Shop"
-            className={cn("w-[200px] justify-between", className)}
+            aria-label="Select a Twilio Account"
+            className={cn("w-fit justify-between", className)}
           >
-            <span className="capitalize">
-              {selectedAccount?.name || "chose an account"}
+            <span className="capitalize truncate">
+              {selectedAccount?.name || "select twilio account"}
             </span>
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0 ">
+        <PopoverContent className="w-[200px] p-0">
           <Command>
+            <CommandInput placeholder="Search account..." />
             <CommandList>
-              <CommandInput placeholder="Search account..." />
               <CommandEmpty>No account found.</CommandEmpty>
-              {shops?.map((account: Shop) => (
-                <Button
-                  variant="ghost"
-                  key={account._id}
-                  onClick={() => {
-                    setSelectedAccount(account);
-                    console.log("Clicked");
-                  }}
-                  className="text-sm w-full"
-                >
-                  <span className="capitalize">{account.name}</span>
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      selectedAccount?.name === account.name
-                        ? "opacity-100"
-                        : "opacity-0"
+              <CommandGroup>
+                {accounts.map((account) => (
+                  <CommandItem
+                    key={account._id}
+                    onSelect={() => handleAccountSelect(account)}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="capitalize">{account.name}</span>
+                    {selectedAccount?._id === account._id && (
+                      <CheckIcon className="h-4 w-4" />
                     )}
-                  />
-                </Button>
-              ))}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </CommandList>
             <CommandSeparator />
             <CommandList>
               <CommandGroup>
-                <DialogTrigger className="w-full">
-                  <CommandItem
-                    onClick={() => {
-                      setOpen(true);
-                      setShowNewTeamDialog(true);
-                    }}
-                  >
-                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                    <span>Save Account</span>
-                  </CommandItem>
-                </DialogTrigger>
+                <CommandItem
+                  onSelect={() => {
+                    setShowNewAccountDialog(true);
+                    setOpen(false);
+                  }}
+                >
+                  <PlusCircledIcon className="mr-2 h-5 w-5" />
+                  Add New Account
+                </CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
@@ -180,42 +181,53 @@ export default function TwilioAccountSwitcher({
       </Popover>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Save New Account</DialogTitle>
+          <DialogTitle>Add New Twilio Account</DialogTitle>
           <DialogDescription>
-            Save a new twilio account for Use later
+            Add a new Twilio account to use later
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2 pb-4">
-          <form className="" action="" method="" onSubmit={handleAddShop}>
+        <form onSubmit={handleAddAccount}>
+          <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="capitalize">
-                name
-              </Label>
-              <Input id="name" placeholder="Acme Inc." />
+              <Label htmlFor="name">Account Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="My Twilio Account"
+                required
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sid" className="capitalize">
-                SID
-              </Label>
-              <Input id="sid" placeholder="enter twilio account sid" readOnly />
+              <Label htmlFor="sid">Account SID</Label>
+              <Input
+                id="sid"
+                name="sid"
+                placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                required
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="type" className="capitalize">
-                Auth Token
-              </Label>
-              <Input id="type" placeholder="Enter twilio account auth token" />
+              <Label htmlFor="authToken">Auth Token</Label>
+              <Input
+                id="authToken"
+                name="authToken"
+                type="password"
+                placeholder="Enter your Twilio auth token"
+                required
+              />
             </div>
-            <DialogFooter className="py-5">
-              <Button
-                variant="outline"
-                onClick={() => setShowNewTeamDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Continue</Button>
-            </DialogFooter>
-          </form>
-        </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowNewAccountDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Save Account</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

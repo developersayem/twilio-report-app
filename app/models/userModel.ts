@@ -31,7 +31,7 @@ const UserSchema: Schema = new Schema(
     twilioAccounts: [
       {
         type: Schema.Types.ObjectId,
-        ref: "twilioAcc",
+        ref: "twilioAccounts",
       },
     ],
   },
