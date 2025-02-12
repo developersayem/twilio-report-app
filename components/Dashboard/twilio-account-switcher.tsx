@@ -9,15 +9,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
+
 import {
   Dialog,
   DialogContent,
@@ -57,10 +49,9 @@ export default function TwilioAccountSwitcher({
   const [selectedAccount, setSelectedAccount] = useState<ITwilioAccount | null>(
     null
   );
-  console.log(selectedAccount);
   const [accounts, setAccounts] = useState<ITwilioAccount[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // SUBMIT NEW TWILIO ACCOUNT DATA TO DATABASE
   const handleAddAccount = async (
     e: FormEvent<HTMLFormElement>
   ): Promise<void> => {
@@ -94,11 +85,9 @@ export default function TwilioAccountSwitcher({
       e.currentTarget.reset();
     } catch (error) {
       console.error("An error occurred while adding Twilio account:", error);
-      // Here you might want to show an error message to the user
     }
   };
 
-  // Fetch Twilio accounts data
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -118,12 +107,16 @@ export default function TwilioAccountSwitcher({
       }
     };
     fetchAccounts();
-  }, []);
+  }, [user?._id]);
 
   const handleAccountSelect = (account: ITwilioAccount) => {
     setSelectedAccount(account);
     setOpen(false);
   };
+
+  const filteredAccounts = accounts.filter((account) =>
+    account.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Dialog open={showNewAccountDialog} onOpenChange={setShowNewAccountDialog}>
@@ -142,41 +135,53 @@ export default function TwilioAccountSwitcher({
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandInput placeholder="Search account..." />
-            <CommandList>
-              <CommandEmpty>No account found.</CommandEmpty>
-              <CommandGroup>
-                {accounts.map((account) => (
-                  <CommandItem
-                    key={account._id}
-                    onSelect={() => handleAccountSelect(account)}
-                    className="flex items-center justify-between"
+        <PopoverContent className="max-w-[350px] p-0">
+          <div className="w-full">
+            <div className="flex flex-col">
+              <div className="border-b p-2">
+                <Input
+                  placeholder="Search account..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8"
+                />
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                {filteredAccounts.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    No account found.
+                  </div>
+                ) : (
+                  filteredAccounts.map((account) => (
+                    <Button
+                      key={account._id}
+                      variant="ghost"
+                      className="w-full justify-between px-2 py-1.5"
+                      onClick={() => handleAccountSelect(account)}
+                    >
+                      <span className="capitalize">{account.name}</span>
+                      {selectedAccount?._id === account._id && (
+                        <CheckIcon className="h-4 w-4" />
+                      )}
+                    </Button>
+                  ))
+                )}
+                <div className="border-t">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2 py-1.5"
+                    onClick={() => {
+                      setShowNewAccountDialog(true);
+                      setOpen(false);
+                    }}
                   >
-                    <span className="capitalize">{account.name}</span>
-                    {selectedAccount?._id === account._id && (
-                      <CheckIcon className="h-4 w-4" />
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-            <CommandSeparator />
-            <CommandList>
-              <CommandGroup>
-                <CommandItem
-                  onSelect={() => {
-                    setShowNewAccountDialog(true);
-                    setOpen(false);
-                  }}
-                >
-                  <PlusCircledIcon className="mr-2 h-5 w-5" />
-                  Add New Account
-                </CommandItem>
-              </CommandGroup>
-            </CommandList>
-          </Command>
+                    <PlusCircledIcon className="mr-2 h-5 w-5" />
+                    Add New Account
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
       <DialogContent>
