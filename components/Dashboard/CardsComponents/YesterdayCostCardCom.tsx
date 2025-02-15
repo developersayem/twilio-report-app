@@ -1,29 +1,29 @@
 "use client";
 
 import { RefreshCcw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { useState, useEffect } from "react";
 import { useTwilio } from "@/contexts/TwilioProvider";
 
 interface CostDataResponse {
   totalCost: string;
-  percentageChange: string; // Add percentageChange to the response
   error?: string;
 }
 
-const TodayCostCardCom = () => {
+const YesterCostCardCom = () => {
   const { twilioAccount } = useTwilio();
   const [loading, setLoading] = useState<boolean>(false);
   const [totalCost, setTotalCost] = useState<string | null>(null);
-  const [percentageChange, setPercentageChange] = useState<string | null>(null); // State for percentage change
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch data from the backend
   const fetchCostData = async () => {
     setLoading(true); // Set loading to true when starting fetch
     setError(null); // Reset error state on each fetch
-
-    const today = new Date().toISOString().split("T")[0];
+    // Get yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1); // Subtract one day
+    const formattedYesterday = yesterday.toISOString().split("T")[0]; // Format: YYYY-MM-DD
 
     try {
       const response = await fetch("/api/v1/dashboard/total-used", {
@@ -31,7 +31,7 @@ const TodayCostCardCom = () => {
         headers: {
           "x-account-sid": twilioAccount?.sid || "",
           "x-auth-token": twilioAccount?.authToken || "",
-          "x-date": today,
+          "x-date": formattedYesterday,
           "Content-Type": "application/json", // Ensure proper content type
         },
       });
@@ -40,7 +40,6 @@ const TodayCostCardCom = () => {
 
       if (response.ok) {
         setTotalCost(data.totalCost); // Update totalCost with fetched data
-        setPercentageChange(data.percentageChange); // Update percentageChange with fetched data
       } else {
         throw new Error(data.error || "Failed to fetch cost data");
       }
@@ -64,7 +63,7 @@ const TodayCostCardCom = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium capitalize">
-          Today Cost
+          Yesterday Cost
         </CardTitle>
         <button
           onClick={() => {
@@ -83,11 +82,9 @@ const TodayCostCardCom = () => {
         ) : (
           <>
             <div className="text-4xl font-bold">${totalCost}</div>
-            {percentageChange && (
-              <p className="text-xs text-muted-foreground">
-                {/* {percentageChange} from last month */}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {/* +20.1% from last month */}
+            </p>
           </>
         )}
       </CardContent>
@@ -95,4 +92,4 @@ const TodayCostCardCom = () => {
   );
 };
 
-export default TodayCostCardCom;
+export default YesterCostCardCom;

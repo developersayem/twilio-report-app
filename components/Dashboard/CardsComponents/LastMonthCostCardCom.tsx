@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCcw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { useState, useEffect } from "react";
 import { useTwilio } from "@/contexts/TwilioProvider";
 
@@ -10,7 +10,7 @@ interface CostDataResponse {
   error?: string;
 }
 
-const LastWeekCostCardCom = () => {
+const LastMonthCostCardCom = () => {
   const { twilioAccount } = useTwilio();
   const [loading, setLoading] = useState<boolean>(false);
   const [totalCost, setTotalCost] = useState<string | null>(null);
@@ -22,15 +22,15 @@ const LastWeekCostCardCom = () => {
     setError(null);
 
     const today = new Date();
-    const dates = Array.from({ length: 7 }, (_, i) => {
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      return date.toISOString().split("T")[0];
+      return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
     });
 
     try {
       const responses = await Promise.all(
-        dates.map(async (date) => {
+        last30Days.map(async (date) => {
           const response = await fetch("/api/v1/dashboard/total-used", {
             method: "GET",
             headers: {
@@ -46,8 +46,11 @@ const LastWeekCostCardCom = () => {
         })
       );
 
-      const totalLastWeekCost = responses.reduce((sum, cost) => sum + cost, 0);
-      setTotalCost(totalLastWeekCost.toFixed(2));
+      const totalLast30DaysCost = responses.reduce(
+        (sum, cost) => sum + cost,
+        0
+      );
+      setTotalCost(totalLast30DaysCost.toFixed(2));
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message || "Error fetching data");
@@ -68,7 +71,7 @@ const LastWeekCostCardCom = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium capitalize">
-          last 7 day&apos;s total cost
+          last 30 day&apos;s total Cost
         </CardTitle>
         <button
           onClick={() => {
@@ -97,4 +100,4 @@ const LastWeekCostCardCom = () => {
   );
 };
 
-export default LastWeekCostCardCom;
+export default LastMonthCostCardCom;
