@@ -45,11 +45,11 @@ export default function TwilioAccountSwitcher({
   className,
 }: PopoverTriggerProps) {
   const { user } = useAuth();
-  const { setTwilioAccount } = useTwilio();
+  const { twilioAccount, setTwilioAccount } = useTwilio();
   const [open, setOpen] = useState(false);
   const [showNewAccountDialog, setShowNewAccountDialog] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<ITwilioAccount | null>(
-    null
+    twilioAccount || null
   );
   const [accounts, setAccounts] = useState<ITwilioAccount[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -106,7 +106,18 @@ export default function TwilioAccountSwitcher({
         );
 
         setAccounts(plainAccounts);
-        setTwilioAccount(plainAccounts[0]);
+
+        // Check for localStorage and update selectedAccount
+        const storedTwilioAccount = localStorage.getItem("twilioAccount");
+        if (storedTwilioAccount) {
+          const storedAccount = JSON.parse(storedTwilioAccount);
+          setTwilioAccount(storedAccount);
+          setSelectedAccount(storedAccount);
+        } else if (plainAccounts.length > 0) {
+          const firstAccount = plainAccounts[0];
+          setTwilioAccount(firstAccount);
+          setSelectedAccount(firstAccount);
+        }
       } catch (error) {
         console.error(
           "An error occurred while fetching Twilio accounts:",
@@ -139,7 +150,7 @@ export default function TwilioAccountSwitcher({
             className={cn("w-fit justify-between", className)}
           >
             <span className="capitalize truncate">
-              {selectedAccount?.name || "select twilio account"}
+              {selectedAccount?.name || "Select Twilio account"}
             </span>
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>

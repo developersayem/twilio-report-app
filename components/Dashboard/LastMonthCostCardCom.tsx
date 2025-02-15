@@ -10,7 +10,7 @@ interface CostDataResponse {
   error?: string;
 }
 
-export const LiveCostCardCom = () => {
+const LastMonthCostCardCom = () => {
   const { twilioAccount } = useTwilio();
   const [loading, setLoading] = useState<boolean>(false);
   const [totalCost, setTotalCost] = useState<string | null>(null);
@@ -18,27 +18,39 @@ export const LiveCostCardCom = () => {
 
   // Function to fetch data from the backend
   const fetchCostData = async () => {
-    setLoading(true); // Set loading to true when starting fetch
-    setError(null); // Reset error state on each fetch
+    setLoading(true);
+    setError(null);
+
+    const today = new Date();
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
+    });
 
     try {
-      console.log(twilioAccount?.sid, twilioAccount?.authToken);
-      const response = await fetch("/api/v1/dashboard/today-total-use", {
-        method: "GET",
-        headers: {
-          "x-account-sid": twilioAccount?.sid || "",
-          "x-auth-token": twilioAccount?.authToken || "",
-          "Content-Type": "application/json", // Ensure proper content type
-        },
-      });
+      const responses = await Promise.all(
+        last30Days.map(async (date) => {
+          const response = await fetch("/api/v1/dashboard/total-used", {
+            method: "GET",
+            headers: {
+              "x-account-sid": twilioAccount?.sid || "",
+              "x-auth-token": twilioAccount?.authToken || "",
+              "x-date": date,
+              "Content-Type": "application/json",
+            },
+          });
 
-      const data: CostDataResponse = await response.json();
+          const data: CostDataResponse = await response.json();
+          return response.ok ? parseFloat(data.totalCost) || 0 : 0;
+        })
+      );
 
-      if (response.ok) {
-        setTotalCost(data.totalCost); // Update totalCost with fetched data
-      } else {
-        throw new Error(data.error || "Failed to fetch cost data");
-      }
+      const totalLast30DaysCost = responses.reduce(
+        (sum, cost) => sum + cost,
+        0
+      );
+      setTotalCost(totalLast30DaysCost.toFixed(2));
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message || "Error fetching data");
@@ -46,7 +58,7 @@ export const LiveCostCardCom = () => {
         console.error("Unknown error:", error);
       }
     } finally {
-      setLoading(false); // Reset loading state when done
+      setLoading(false);
     }
   };
 
@@ -58,7 +70,9 @@ export const LiveCostCardCom = () => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Live Cost</CardTitle>
+        <CardTitle className="text-sm font-medium capitalize">
+          last 30 day&apos;s total Cost
+        </CardTitle>
         <button
           onClick={() => {
             setLoading(true); // Set loading to true when the button is clicked
@@ -75,9 +89,9 @@ export const LiveCostCardCom = () => {
           <div className="text-red-500">{error}</div>
         ) : (
           <>
-            <div className="text-2xl font-bold">${totalCost}</div>
+            <div className="text-4xl font-bold">${totalCost}</div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
+              {/* +20.1% from last month */}
             </p>
           </>
         )}
@@ -85,3 +99,5 @@ export const LiveCostCardCom = () => {
     </Card>
   );
 };
+
+export default LastMonthCostCardCom;
