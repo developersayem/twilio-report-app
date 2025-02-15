@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeCom/theme-provider";
+import { TwilioProvider } from "@/contexts/TwilioProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,16 +30,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <TwilioProvider>{children}</TwilioProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

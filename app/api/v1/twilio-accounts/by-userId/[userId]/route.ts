@@ -10,8 +10,7 @@ export async function GET(
   try {
     await dbConnect(); // Ensure database connection
     const userId = (await params).userId;
-    console.log(userId);
-    const accounts = await TwilioAccountsModel.find({ user: userId }); // Fetch tasks by userId
+    const accounts = await TwilioAccountsModel.find({ user: userId }).lean(); // Fetch tasks by userId
     return NextResponse.json(accounts, { status: 200 });
   } catch (error) {
     return NextResponse.json(

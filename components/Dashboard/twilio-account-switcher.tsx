@@ -26,6 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthProvider";
+import { useTwilio } from "@/contexts/TwilioProvider";
 
 interface ITwilioAccount {
   _id: string;
@@ -44,6 +45,7 @@ export default function TwilioAccountSwitcher({
   className,
 }: PopoverTriggerProps) {
   const { user } = useAuth();
+  const { setTwilioAccount } = useTwilio();
   const [open, setOpen] = useState(false);
   const [showNewAccountDialog, setShowNewAccountDialog] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<ITwilioAccount | null>(
@@ -98,7 +100,13 @@ export default function TwilioAccountSwitcher({
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setAccounts(data);
+        const plainAccounts = data.map(
+          (account: ITwilioAccount & { toObject?: () => ITwilioAccount }) =>
+            account.toObject ? account.toObject() : account
+        );
+
+        setAccounts(plainAccounts);
+        setTwilioAccount(plainAccounts[0]);
       } catch (error) {
         console.error(
           "An error occurred while fetching Twilio accounts:",
@@ -111,6 +119,7 @@ export default function TwilioAccountSwitcher({
 
   const handleAccountSelect = (account: ITwilioAccount) => {
     setSelectedAccount(account);
+    setTwilioAccount(account);
     setOpen(false);
   };
 
