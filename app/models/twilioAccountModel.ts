@@ -25,10 +25,6 @@ const TwilioAccountsSchema: Schema = new Schema(
       ref: "User",
       required: true, // Ensures every task is linked to a user
     },
-    usages: {
-      type: Schema.Types.ObjectId,
-      ref: "usages",
-    },
   },
   { timestamps: true } // Automatically adds createdAt & updatedAt
 );

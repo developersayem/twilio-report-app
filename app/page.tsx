@@ -20,6 +20,7 @@ import LastWeekCostCardCom from "@/components/Dashboard/CardsComponents/LastWeek
 import LastMonthCostCardCom from "@/components/Dashboard/CardsComponents/LastMonthCostCardCom";
 import UsageTableCom from "@/components/Dashboard/UsageTableCom";
 import WeeklyUsageTableCom from "@/components/Dashboard/WeeklyUsageTableCom";
+import TwilioAccountCardCom from "@/components/Dashboard/TwilioAccountCardCom";
 
 export default function DashboardPage() {
   const auth = useAuth();
@@ -49,23 +50,30 @@ export default function DashboardPage() {
                 <TabsTrigger value="monthly-reports">
                   Monthly Reports
                 </TabsTrigger>
-                <TabsTrigger value="reports">Twilio Accounts</TabsTrigger>
+                <TabsTrigger value="twilio-accounts">
+                  Twilio Accounts
+                </TabsTrigger>
                 <TabsTrigger value="notifications">Profile</TabsTrigger>
               </TabsList>
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <LiveCostCardCom />
-                  <YesterdayCostCardCom />
-                  <LastWeekCostCardCom />
-                  <LastMonthCostCardCom />
+                  {/* <LiveCostCardCom /> */}
+                  {/* <YesterdayCostCardCom /> */}
+                  {/* <LastWeekCostCardCom /> */}
+                  {/* <LastMonthCostCardCom /> */}
                 </div>
                 <div className="w-fll h-full">
-                  <WeeklyUsageTableCom />
+                  {/* <WeeklyUsageTableCom /> */}
                 </div>
               </TabsContent>
+              {/* Monthly Reports */}
               <TabsContent value="monthly-reports" className="space-y-4">
+                <div className="w-fll h-full">{/* <UsageTableCom /> */}</div>
+              </TabsContent>
+              {/* Twilio Accounts Details */}
+              <TabsContent value="twilio-accounts" className="space-y-4">
                 <div className="w-fll h-full">
-                  <UsageTableCom />
+                  <TwilioAccountCardCom />
                 </div>
               </TabsContent>
             </Tabs>

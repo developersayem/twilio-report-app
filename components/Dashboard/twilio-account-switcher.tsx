@@ -27,15 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useTwilio } from "@/contexts/TwilioProvider";
-
-interface ITwilioAccount {
-  _id: string;
-  name: string;
-  sid: string;
-  authToken: string;
-  user: string;
-  usages: string;
-}
+import ITwilioAccount from "@/interfaces/ITwilioAccount";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -45,7 +37,7 @@ export default function TwilioAccountSwitcher({
   className,
 }: PopoverTriggerProps) {
   const { user } = useAuth();
-  const { twilioAccount, setTwilioAccount } = useTwilio();
+  const { twilioAccount, setTwilioAccount, reFetchData } = useTwilio();
   const [open, setOpen] = useState(false);
   const [showNewAccountDialog, setShowNewAccountDialog] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<ITwilioAccount | null>(
@@ -84,7 +76,6 @@ export default function TwilioAccountSwitcher({
       setAccounts((prev) => [...prev, newAccount]);
       setShowNewAccountDialog(false);
       setOpen(false);
-      e.currentTarget.reset();
     } catch (error) {
       console.error("An error occurred while adding Twilio account:", error);
     }
@@ -104,9 +95,7 @@ export default function TwilioAccountSwitcher({
           (account: ITwilioAccount & { toObject?: () => ITwilioAccount }) =>
             account.toObject ? account.toObject() : account
         );
-
         setAccounts(plainAccounts);
-
         // Check for localStorage and update selectedAccount
         const storedTwilioAccount = localStorage.getItem("twilioAccount");
         if (storedTwilioAccount) {
@@ -126,7 +115,7 @@ export default function TwilioAccountSwitcher({
       }
     };
     fetchAccounts();
-  }, [user?._id]);
+  }, [reFetchData]);
 
   const handleAccountSelect = (account: ITwilioAccount) => {
     setSelectedAccount(account);

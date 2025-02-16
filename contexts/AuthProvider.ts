@@ -1,7 +1,7 @@
 "use client";
 
 import IUser from "@/interfaces/IUser";
-import {
+import React, {
   createContext,
   useContext,
   useState,
@@ -37,11 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  
+  return React.createElement(
+    AuthContext.Provider,
+      { value: { user, login, logout } },
+      children
+    );
 }
 
 export function useAuth() {

@@ -1,4 +1,5 @@
 "use client";
+import ITwilioAccount from "@/interfaces/ITwilioAccount";
 import React from "react";
 
 import {
@@ -9,20 +10,16 @@ import {
   useEffect,
 } from "react";
 
-export default interface ITwilioAccount {
-  _id: string;
-  name: string;
-  sid: string;
-  authToken: string;
-  user: string;
-  usages: string;
-}
+
 
 // Define the context type
 interface TwilioContextType {
   twilioAccount: ITwilioAccount | null;
   setTwilioAccount: (accountData: ITwilioAccount) => void;
   clearTwilioAccount: () => void;
+  setReFetchData: (reFetchData: boolean) => void;
+  reFetchData:boolean
+
 }
 
 // Create the context
@@ -32,6 +29,7 @@ const TwilioContext = createContext<TwilioContextType | undefined>(undefined);
 export function TwilioProvider({ children }: { children: ReactNode }) {
   const [twilioAccount, setTwilioAccountState] =
     useState<ITwilioAccount | null>(null);
+    const [reFetchData,setReFetchData]=useState<boolean>(false);
 
   useEffect(() => {
     const storedTwilioAccount = localStorage.getItem("twilioAccount");
@@ -52,7 +50,7 @@ export function TwilioProvider({ children }: { children: ReactNode }) {
 
   return React.createElement(
     TwilioContext.Provider,
-    { value: { twilioAccount, setTwilioAccount, clearTwilioAccount } },
+    { value: { twilioAccount, setTwilioAccount, clearTwilioAccount,reFetchData,setReFetchData } },
     children
   );
 }
