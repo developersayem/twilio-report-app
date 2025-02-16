@@ -1,5 +1,4 @@
-export const maxDuration = 30; // This function can run for a maximum of 5 seconds
-
+export const maxDuration = 30; // Function timeout limit
 
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
@@ -25,81 +24,78 @@ export async function GET(req: NextRequest) {
       callCount: number;
       callCost: number;
       totalCost: number;
-      totalCallMinutes: number; // Add total call minutes
+      totalCallMinutes: number;
     }[]
   > {
     const today = new Date();
-    const usageData: {
-      date: string;
-      smsCount: number;
-      smsCost: number;
-      callCount: number;
-      callCost: number;
-      totalCost: number;
-      totalCallMinutes: number;
-    }[] = [];
+    const usageRequests = [];
 
-    try {
-      for (let i = 0; i < 100; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        const formattedDate = date.toISOString().split("T")[0];
+    for (let i = 0; i < 31; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const formattedDate = date.toISOString().split("T")[0];
+      const currentDate = new Date(formattedDate);
 
-        const fixedDate = new Date(formattedDate);
+      usageRequests.push(
+        client.usage.records.daily
+          .list({
+            startDate: currentDate,
+            endDate: currentDate,
+          })
+          .then((records) => {
+            let smsCount = 0;
+            let callCount = 0;
+            let smsCost = 0;
+            let callCost = 0;
+            let totalCost = 0;
+            let totalCallMinutes = 0;
 
-        const records = await client.usage.records.daily.list({
-          startDate: fixedDate,
-          endDate: fixedDate,
-        });
+            records.forEach((record) => {
+              const cost =
+                typeof record.price === "number"
+                  ? record.price
+                  : parseFloat(record.price || "0");
 
-        let smsCount = 0;
-        let callCount = 0;
-        let smsCost = 0;
-        let callCost = 0;
-        let totalCost = 0;
-        let totalCallMinutes = 0; // Initialize total call minutes
-
-        records.forEach((record) => {
-          const cost =
-            typeof record.price === "number"
-              ? record.price
-              : parseFloat(record.price || "0");
-
-          if (record.category.includes("sms")) {
-            smsCount += record.usage ? parseInt(record.usage, 10) : 0;
-            smsCost += cost;
-          }
-          if (record.category.includes("calls")) {
-            callCount += record.usage ? parseInt(record.usage, 10) : 0;
-            callCost += cost;
-
-            // Add call duration (convert from seconds to minutes)
-            const callDuration = record.usage ? parseInt(record.usage, 10) : 0;
-            totalCallMinutes += callDuration / 60; // Convert seconds to minutes
-          }
-          totalCost += cost;
-        });
-
-        usageData.push({
-          date: formattedDate,
-          smsCount,
-          smsCost: parseFloat(smsCost.toFixed(2)),
-          callCount,
-          callCost: parseFloat(callCost.toFixed(2)),
-          totalCost: parseFloat(totalCost.toFixed(2)),
-          totalCallMinutes: parseFloat(totalCallMinutes.toFixed(2)), // Round to 2 decimals
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching Twilio usage data:", error);
+              if (record.category.includes("sms")) {
+                smsCount += parseInt(record.usage || "0", 10);
+                smsCost += cost;
+              }
+              if (record.category.includes("calls")) {
+                callCount += parseInt(record.usage || "0", 10);
+                callCost += cost;
+                totalCallMinutes += parseInt(record.usage || "0", 10) / 60; // Convert seconds to minutes
+              }
+              totalCost += cost;
+            });
+            return {
+              date: formattedDate,
+              smsCount,
+              smsCost: parseFloat(smsCost.toFixed(2)),
+              callCount,
+              callCost: parseFloat(callCost.toFixed(2)),
+              totalCost: parseFloat(totalCost.toFixed(2)),
+              totalCallMinutes: parseFloat(totalCallMinutes.toFixed(2)),
+            };
+          })
+          .catch((error) => {
+            console.error(`Error fetching data for ${formattedDate}:`, error);
+            return null; // Skip failed requests
+          })
+      );
     }
 
-    return usageData;
+    const results = await Promise.all(usageRequests);
+    return results.filter((entry) => entry !== null); // Remove failed requests
   }
 
-  const usageRecords = await fetchUsageData();
-
-  return NextResponse.json({
-    data: usageRecords,
-  });
+  try {
+    const usageRecords = await fetchUsageData();
+    return NextResponse.json({ data: usageRecords });
+  } catch (error) {
+    console.error("Error fetching Twilio usage data:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch usage data" },
+      { status: 500 }
+    );
+  }
 }
