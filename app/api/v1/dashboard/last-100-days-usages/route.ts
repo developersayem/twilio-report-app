@@ -1,3 +1,6 @@
+export const maxDuration = 30; // This function can run for a maximum of 5 seconds
+
+
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
 
