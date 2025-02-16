@@ -4,79 +4,91 @@ import { RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { useState, useEffect } from "react";
 import { useTwilio } from "@/contexts/TwilioProvider";
-
-interface CostDataResponse {
-  totalCost: string;
-  error?: string;
+interface UsageData {
+  date: string;
+  smsCount: number;
+  smsCost: number;
+  callCount: number;
+  callCost: number;
+  totalCost: number;
+  totalCallMinutes: number;
 }
 
 const LastMonthCostCardCom = () => {
   const { twilioAccount } = useTwilio();
+  const [data, setData] = useState<UsageData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [totalCost, setTotalCost] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to fetch data from the backend
-  const fetchCostData = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
 
-    const today = new Date();
-    const last30Days = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
-    });
-
     try {
-      const responses = await Promise.all(
-        last30Days.map(async (date) => {
-          const response = await fetch("/api/v1/dashboard/total-used", {
-            method: "GET",
-            headers: {
-              "x-account-sid": twilioAccount?.sid || "",
-              "x-auth-token": twilioAccount?.authToken || "",
-              "x-date": date,
-              "Content-Type": "application/json",
-            },
-          });
+      const response = await fetch("/api/v1/dashboard/last-30-days-usages", {
+        method: "GET",
+        headers: {
+          "x-account-sid": twilioAccount?.sid || "",
+          "x-auth-token": twilioAccount?.authToken || "",
+          "Content-Type": "application/json",
+        },
+      });
 
-          const data: CostDataResponse = await response.json();
-          return response.ok ? parseFloat(data.totalCost) || 0 : 0;
-        })
-      );
+      const result = await response.json();
 
-      const totalLast30DaysCost = responses.reduce(
-        (sum, cost) => sum + cost,
-        0
-      );
-      setTotalCost(totalLast30DaysCost.toFixed(2));
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message || "Error fetching data");
-      } else {
-        console.error("Unknown error:", error);
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to fetch data");
       }
+
+      setData(result.data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch data on component mount and when 'loading' changes (e.g., when the button is clicked)
   useEffect(() => {
-    fetchCostData();
+    fetchData();
   }, []);
+  // Calculate totals for each column
+  const calculateTotals = () => {
+    const totals = data.reduce(
+      (acc, item) => {
+        acc.smsCount += item.smsCount;
+        acc.smsCost += item.smsCost;
+        acc.callCount += item.callCount;
+        acc.totalCallMinutes += item.totalCallMinutes;
+        acc.callCost += item.callCost;
+        acc.totalCost += item.totalCost;
+        return acc;
+      },
+      {
+        smsCount: 0,
+        smsCost: 0,
+        callCount: 0,
+        totalCallMinutes: 0,
+        callCost: 0,
+        totalCost: 0,
+      }
+    );
+    return totals;
+  };
+
+  const totals = calculateTotals();
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium capitalize">
-          last 30 day&apos;s total Cost
+          {`last ${data.length} day's total Cost`}
         </CardTitle>
         <button
           onClick={() => {
             setLoading(true); // Set loading to true when the button is clicked
-            fetchCostData(); // Fetch data on button click
+            fetchData(); // Fetch data on button click
           }}
         >
           <RefreshCcw size={24} className={loading ? "animate-spin" : ""} />
@@ -89,7 +101,9 @@ const LastMonthCostCardCom = () => {
           <div className="text-red-500">{error}</div>
         ) : (
           <>
-            <div className="text-4xl font-bold">${totalCost}</div>
+            <div className="text-4xl font-bold">
+              ${totals.totalCost.toFixed(2)}
+            </div>
             <p className="text-xs text-muted-foreground">
               {/* +20.1% from last month */}
             </p>

@@ -106,7 +106,7 @@ const WeeklyUsageTableCom = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Twilio Usage (Last 7 Days)</h2>
+        <h2 className="text-xl font-bold">{`Twilio Usage (Last ${data.length} Days)`}</h2>
         <div className="flex gap-2">
           <Button onClick={fetchData} disabled={loading} variant="outline">
             <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />

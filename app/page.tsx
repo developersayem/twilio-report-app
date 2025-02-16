@@ -66,7 +66,6 @@ export default function DashboardPage() {
                   <WeeklyUsageTableCom />
                 </div>
               </TabsContent>
-              Monthly Reports
               <TabsContent value="monthly-reports" className="space-y-4">
                 <div className="w-fll h-full">
                   <UsageTableCom />
