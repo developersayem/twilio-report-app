@@ -6,9 +6,6 @@ export async function GET(req: NextRequest) {
   const authToken = req.headers.get("x-auth-token") || "";
   const date = req.headers.get("x-date"); // Extract the date from the header
 
-  console.log("Received Account SID:", accountSid);
-  console.log("Received Auth Token:", authToken ? "Present" : "Missing");
-  console.log("Received Date:", date);
 
   if (!accountSid.startsWith("AC") || !authToken) {
     return NextResponse.json(

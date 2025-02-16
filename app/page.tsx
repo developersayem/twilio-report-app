@@ -13,7 +13,6 @@ import TwilioAccountSwitcher from "@/components/Dashboard/twilio-account-switche
 import { UserNav } from "@/components/Dashboard/user-nav";
 import { ThemeCom } from "@/components/ThemeCom/ThemeCom";
 import { useAuth } from "@/contexts/AuthProvider";
-import Link from "next/link";
 import LiveCostCardCom from "@/components/Dashboard/CardsComponents/TodayCostCardCom";
 import YesterdayCostCardCom from "@/components/Dashboard/CardsComponents/YesterdayCostCardCom";
 import LastWeekCostCardCom from "@/components/Dashboard/CardsComponents/LastWeekCostCardCom";
@@ -21,6 +20,7 @@ import LastMonthCostCardCom from "@/components/Dashboard/CardsComponents/LastMon
 import UsageTableCom from "@/components/Dashboard/UsageTableCom";
 import WeeklyUsageTableCom from "@/components/Dashboard/WeeklyUsageTableCom";
 import TwilioAccountCardCom from "@/components/Dashboard/TwilioAccountCardCom";
+import LoginCardCom from "./(auth)/AuthComponents/LoginCardCom";
 
 export default function DashboardPage() {
   const auth = useAuth();
@@ -81,11 +81,10 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : (
-        <div className="w-full h-[80vh] flex justify-center items-center">
-          Please log in to see your data.
-          <Link href="/login" className="underline text-blue-500 px-1">
-            Log in
-          </Link>
+        <div className="w-screen h-screen flex justify-center items-center">
+          <span className="max-w-96">
+            <LoginCardCom />
+          </span>
         </div>
       )}
     </>

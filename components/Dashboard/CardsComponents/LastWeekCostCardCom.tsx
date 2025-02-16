@@ -84,7 +84,7 @@ const LastWeekCostCardCom = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium capitalize">
-          last 7 day&apos;s total cost
+          {` last ${data.length} day's total cost`}
         </CardTitle>
         <button
           onClick={() => {
@@ -105,9 +105,6 @@ const LastWeekCostCardCom = () => {
             <div className="text-4xl font-bold">
               ${totals.totalCost.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {/* +20.1% from last month */}
-            </p>
           </>
         )}
       </CardContent>

@@ -82,9 +82,6 @@ const YesterCostCardCom = () => {
         ) : (
           <>
             <div className="text-4xl font-bold">${totalCost}</div>
-            <p className="text-xs text-muted-foreground">
-              {/* +20.1% from last month */}
-            </p>
           </>
         )}
       </CardContent>

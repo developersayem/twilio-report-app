@@ -15,7 +15,6 @@ const TodayCostCardCom = () => {
   const { twilioAccount } = useTwilio();
   const [loading, setLoading] = useState<boolean>(false);
   const [totalCost, setTotalCost] = useState<string | null>(null);
-  const [percentageChange, setPercentageChange] = useState<string | null>(null); // State for percentage change
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch data from the backend
@@ -40,7 +39,6 @@ const TodayCostCardCom = () => {
 
       if (response.ok) {
         setTotalCost(data.totalCost); // Update totalCost with fetched data
-        setPercentageChange(data.percentageChange); // Update percentageChange with fetched data
       } else {
         throw new Error(data.error || "Failed to fetch cost data");
       }
@@ -83,11 +81,6 @@ const TodayCostCardCom = () => {
         ) : (
           <>
             <div className="text-4xl font-bold">${totalCost}</div>
-            {percentageChange && (
-              <p className="text-xs text-muted-foreground">
-                {/* {percentageChange} from last month */}
-              </p>
-            )}
           </>
         )}
       </CardContent>

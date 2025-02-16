@@ -104,9 +104,6 @@ const LastMonthCostCardCom = () => {
             <div className="text-4xl font-bold">
               ${totals.totalCost.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {/* +20.1% from last month */}
-            </p>
           </>
         )}
       </CardContent>

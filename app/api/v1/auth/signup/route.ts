@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
   await dbConnect();
 
   const { firstName, lastName, email, password } = await req.json();
-  console.log({ firstName, lastName, email, password });
 
   // Ensure password is provided
   if (!password) {
