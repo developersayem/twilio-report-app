@@ -57,18 +57,20 @@ export default function DashboardPage() {
               </TabsList>
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {/* <LiveCostCardCom /> */}
-                  {/* <YesterdayCostCardCom /> */}
-                  {/* <LastWeekCostCardCom /> */}
-                  {/* <LastMonthCostCardCom /> */}
+                  <LiveCostCardCom />
+                  <YesterdayCostCardCom />
+                  <LastWeekCostCardCom />
+                  <LastMonthCostCardCom />
                 </div>
                 <div className="w-fll h-full">
-                  {/* <WeeklyUsageTableCom /> */}
+                  <WeeklyUsageTableCom />
                 </div>
               </TabsContent>
-              {/* Monthly Reports */}
+              Monthly Reports
               <TabsContent value="monthly-reports" className="space-y-4">
-                <div className="w-fll h-full">{/* <UsageTableCom /> */}</div>
+                <div className="w-fll h-full">
+                  <UsageTableCom />
+                </div>
               </TabsContent>
               {/* Twilio Accounts Details */}
               <TabsContent value="twilio-accounts" className="space-y-4">
