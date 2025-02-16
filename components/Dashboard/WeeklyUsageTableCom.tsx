@@ -137,10 +137,12 @@ const WeeklyUsageTableCom = () => {
             {data.map((item) => (
               <TableRow key={item.date}>
                 <TableCell>{item.date}</TableCell>
-                <TableCell>{item.smsCount}</TableCell>
+                <TableCell>{item.smsCount}SMS</TableCell>
                 <TableCell>${item.smsCost.toFixed(2)}</TableCell>
-                <TableCell>{item.callCount}</TableCell>
-                <TableCell>{item.totalCallMinutes.toFixed(2)}</TableCell>
+                <TableCell>{item.callCount} Calls</TableCell>
+                <TableCell>
+                  {item.totalCallMinutes.toFixed(2)} Minutes
+                </TableCell>
                 <TableCell>${item.callCost.toFixed(2)}</TableCell>
                 <TableCell>${item.totalCost.toFixed(2)}</TableCell>
               </TableRow>
@@ -148,10 +150,12 @@ const WeeklyUsageTableCom = () => {
             {/* Totals Row */}
             <TableRow className="font-bold bg-gray-100 text-black hover:bg-gray-100 hover:text-black">
               <TableCell>Total</TableCell>
-              <TableCell>{totals.smsCount}</TableCell>
+              <TableCell>{totals.smsCount} SMS</TableCell>
               <TableCell>${totals.smsCost.toFixed(2)}</TableCell>
-              <TableCell>{totals.callCount}</TableCell>
-              <TableCell>{totals.totalCallMinutes.toFixed(2)}</TableCell>
+              <TableCell>{totals.callCount} Calls</TableCell>
+              <TableCell>
+                {totals.totalCallMinutes.toFixed(2)} Minutes
+              </TableCell>
               <TableCell>${totals.callCost.toFixed(2)}</TableCell>
               <TableCell>${totals.totalCost.toFixed(2)}</TableCell>
             </TableRow>
