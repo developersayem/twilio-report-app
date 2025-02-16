@@ -25,7 +25,7 @@ interface UsageData {
   totalCallMinutes: number;
 }
 
-const UsageTable = () => {
+const WeeklyUsageTableCom = () => {
   const { twilioAccount } = useTwilio();
   const [data, setData] = useState<UsageData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -36,7 +36,7 @@ const UsageTable = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/v1/dashboard/last-30-days-usages", {
+      const response = await fetch("/api/v1/dashboard/last-7-days-usages", {
         method: "GET",
         headers: {
           "x-account-sid": twilioAccount?.sid || "",
@@ -65,13 +65,11 @@ const UsageTable = () => {
     fetchData();
   }, []);
 
-  // Function to export table data as an Excel file
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Twilio Usage");
 
-    // Convert workbook to Excel file and trigger download
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const excelBlob = new Blob([excelBuffer], {
       type: "application/octet-stream",
@@ -80,7 +78,6 @@ const UsageTable = () => {
     saveAs(excelBlob, "Twilio_Usage.xlsx");
   };
 
-  // Calculate totals for each column
   const calculateTotals = () => {
     const totals = data.reduce(
       (acc, item) => {
@@ -109,7 +106,7 @@ const UsageTable = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">{`Twilio Usage (Last ${data.length} Days)`}</h2>
+        <h2 className="text-xl font-bold">Twilio Usage (Last 7 Days)</h2>
         <div className="flex gap-2">
           <Button onClick={fetchData} disabled={loading} variant="outline">
             <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
@@ -127,7 +124,7 @@ const UsageTable = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Date</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead>SMS Count</TableHead>
               <TableHead>SMS Cost ($)</TableHead>
               <TableHead>Call Count</TableHead>
@@ -137,40 +134,24 @@ const UsageTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  Loading...
-                </TableCell>
+            {data.map((item) => (
+              <TableRow key={item.date}>
+                <TableCell>{item.date}</TableCell>
+                <TableCell>{item.smsCount}</TableCell>
+                <TableCell>${item.smsCost.toFixed(2)}</TableCell>
+                <TableCell>{item.callCount}</TableCell>
+                <TableCell>{item.totalCallMinutes.toFixed(2)}</TableCell>
+                <TableCell>${item.callCost.toFixed(2)}</TableCell>
+                <TableCell>${item.totalCost.toFixed(2)}</TableCell>
               </TableRow>
-            ) : data.length > 0 ? (
-              data.map((item) => (
-                <TableRow key={item.date}>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell>{item.smsCount} SMS</TableCell>
-                  <TableCell>${item.smsCost.toFixed(2)}</TableCell>
-                  <TableCell>{item.callCount} Calls</TableCell>
-                  <TableCell>{item.totalCallMinutes} Minutes</TableCell>
-                  <TableCell>${item.callCost.toFixed(2)}</TableCell>
-                  <TableCell>${item.totalCost.toFixed(2)}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  No data available
-                </TableCell>
-              </TableRow>
-            )}
-            {/* Totals row */}
-            <TableRow className="bg-[#fafafa] text-black hover:bg-[#fafafa] hover:text-black font-bold">
+            ))}
+            {/* Totals Row */}
+            <TableRow className="font-bold bg-gray-100 text-black hover:bg-gray-100 hover:text-black">
               <TableCell>Total</TableCell>
-              <TableCell>{totals.smsCount} SMS</TableCell>
+              <TableCell>{totals.smsCount}</TableCell>
               <TableCell>${totals.smsCost.toFixed(2)}</TableCell>
-              <TableCell>{totals.callCount} Calls</TableCell>
-              <TableCell>
-                {totals.totalCallMinutes.toFixed(2)} Minutes
-              </TableCell>
+              <TableCell>{totals.callCount}</TableCell>
+              <TableCell>{totals.totalCallMinutes.toFixed(2)}</TableCell>
               <TableCell>${totals.callCost.toFixed(2)}</TableCell>
               <TableCell>${totals.totalCost.toFixed(2)}</TableCell>
             </TableRow>
@@ -181,4 +162,4 @@ const UsageTable = () => {
   );
 };
 
-export default UsageTable;
+export default WeeklyUsageTableCom;

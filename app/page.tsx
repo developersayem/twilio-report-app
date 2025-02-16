@@ -19,6 +19,7 @@ import YesterdayCostCardCom from "@/components/Dashboard/CardsComponents/Yesterd
 import LastWeekCostCardCom from "@/components/Dashboard/CardsComponents/LastWeekCostCardCom";
 import LastMonthCostCardCom from "@/components/Dashboard/CardsComponents/LastMonthCostCardCom";
 import UsageTableCom from "@/components/Dashboard/UsageTableCom";
+import WeeklyUsageTableCom from "@/components/Dashboard/WeeklyUsageTableCom";
 
 export default function DashboardPage() {
   const auth = useAuth();
@@ -30,10 +31,8 @@ export default function DashboardPage() {
           <div className="border-b">
             <div className="grid grid-cols-3 h-16 items-center px-4">
               {/* <MainNav className="mx-6" /> */}
-              <div>
-                <h1>Twilio Usage&apos;s Reports</h1>
-              </div>
               <TwilioAccountSwitcher />
+              <div>{/* <h1>Twilio Usage&apos;s Reports</h1> */}</div>
               <div className="ml-auto flex items-center space-x-4">
                 <ThemeCom />
                 <UserNav />
@@ -47,15 +46,11 @@ export default function DashboardPage() {
             <Tabs defaultValue="overview" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="analytics" disabled>
-                  Analytics
+                <TabsTrigger value="monthly-reports">
+                  Monthly Reports
                 </TabsTrigger>
-                <TabsTrigger value="reports" disabled>
-                  Reports
-                </TabsTrigger>
-                <TabsTrigger value="notifications" disabled>
-                  Notifications
-                </TabsTrigger>
+                <TabsTrigger value="reports">Twilio Accounts</TabsTrigger>
+                <TabsTrigger value="notifications">Profile</TabsTrigger>
               </TabsList>
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -64,6 +59,11 @@ export default function DashboardPage() {
                   <LastWeekCostCardCom />
                   <LastMonthCostCardCom />
                 </div>
+                <div className="w-fll h-full">
+                  <WeeklyUsageTableCom />
+                </div>
+              </TabsContent>
+              <TabsContent value="monthly-reports" className="space-y-4">
                 <div className="w-fll h-full">
                   <UsageTableCom />
                 </div>
